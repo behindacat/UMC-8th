@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style> 
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+}
+
+.diamond {
+  width: 100px;
+  height: 100px;
+  background: pink;
+  transform: rotate(45deg);
+  transition: 0.25s ease-in-out;
+}
+
+.diamond:hover {
+  background: darkorchid;
+  transition: 0.5s ease-in-out;
+}
+</style>
+</head>
+<body>
+<h1>transition</h1>
+<div class="container">
+  <div class="diamond"></div>
+  <div class="diamond"></div>
+  <div class="diamond"></div>
+</div>
+</body>
+</html>

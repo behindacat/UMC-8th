@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centering Methods</title>
+  <style>
+    /* 전체 스타일 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .container {
+      width: 300px;
+      height: 200px;
+      border: 2px solid black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* 1. text-align 방식 (인라인 요소만 가능) */
+    .text-align {
+      text-align: center;
+      line-height: 200px; /* height와 동일하게 설정 */
+    }
+
+    /* 2. margin auto 방식 (블록 요소 중앙 정렬) */
+    .margin {
+      width: 150px;
+      height: 50px;
+      margin: auto;
+    }
+
+    /* 3. flex 방식 */
+    .flex {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 4. translate 방식 */
+    .translate-wrapper {
+      position: relative;
+    }
+
+    .translate {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* 5. grid 방식 */
+    .grid {
+      display: grid;
+      place-items: center;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <!-- text-align 방식 -->
+  <div class="container text-align">
+    text-align 방식
+  </div>
+
+  <!-- margin auto 방식 -->
+  <div class="container">
+    <div class="margin">margin auto 방식</div>
+  </div>
+
+  <!-- flex 방식 -->
+  <div class="container flex">
+    flex 방식
+  </div>
+
+  <!-- translate 방식 -->
+  <div class="container translate-wrapper">
+    <div class="translate">translate 방식</div>
+  </div>
+
+  <!-- grid 방식 -->
+  <div class="container grid">
+    grid 방식
+  </div>
+
+</body>
+</html>
