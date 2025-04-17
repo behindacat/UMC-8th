@@ -1,0 +1,8 @@
+.env
+
+# 다른 모든 폴더는 무시
+week1/
+week2/
+week3/
+week4/
+week5/UMC-8th-BE/
