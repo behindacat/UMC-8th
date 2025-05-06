@@ -29,3 +29,7 @@ function validateSignin(values: UserSignInformation) {
 
 export { validateSignin };
 
+export const isAuthenticated = () => {
+   return !!localStorage.getItem("token");  // 또는 로그인 상태를 확인할 수 있는 다른 키
+ };
+
