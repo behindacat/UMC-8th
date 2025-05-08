@@ -12,27 +12,40 @@ const Navbar = () => {
    const [sidebarOpen, setSidebarOpen] = useState(false);
    const [sortOrder, setSortOrder] = useState<PAGINATION_ORDER>("asc");
    const [username, setUsername] = useState<string | null>(null);
-   const [isMobile, setIsMobile] = useState(false); // 화면 크기 추적
    const [windowWidth, setWindowWidth] = useState(window.innerWidth); // 화면 크기 추적
 
    // useEffect에서 API를 호출해 username을 가져옴
    useEffect(() => {
-      const handleResize = () => {
-        const newWidth = window.innerWidth;
-        setWindowWidth(newWidth);
-    
-        // 예: 데스크탑에서 창이 1024px 이하로 줄어들면 사이드바 닫기
-        if (newWidth <= 1024 && sidebarOpen) {
-          setSidebarOpen(false);
-        }
-      };
-    
-      window.addEventListener("resize", handleResize);
-      handleResize(); // 초기 실행
-      return () => window.removeEventListener("resize", handleResize);
-    }, [sidebarOpen]);
-    
-    
+      if (accessToken) {
+         const fetchUsername = async () => {
+            const response = await getMyInfo();  // 사용자 정보 API 호출
+            if (response && response.data?.name) {
+               setUsername(response.data.name); // 이름 저장
+            }
+         };
+
+         fetchUsername();
+      } else {
+         setUsername(null); // 로그인 상태가 아니면 username을 null로 설정
+      }
+   }, [accessToken]);  // accessToken이 변할 때마다 실행
+
+   useEffect(() => {
+    const handleResize = () => {
+      const newWidth = window.innerWidth;
+      setWindowWidth(newWidth);
+  
+      // 예: 데스크탑에서 창이 1024px 이하로 줄어들면 사이드바 닫기
+      if (newWidth <= 1024 && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+  
+    window.addEventListener("resize", handleResize);
+    handleResize(); // 초기 실행
+    return () => window.removeEventListener("resize", handleResize);
+  }, [sidebarOpen]);
+  
 
    const handleLogout = () => {
       logout(); // 로그아웃 함수 호출
@@ -73,12 +86,15 @@ const Navbar = () => {
                   {username && <span>{username}님, 환영합니다!</span>}
                 </div>
                 <Link
-                  to={"/search"}
+                  to="/my"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-500"
                 >
-                  검색
+                  마이페이지
                 </Link>
-                {/* 로그아웃 버튼 */}
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-500"
+                ></button>
                 <button
                   onClick={handleLogout}
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-500"
@@ -117,4 +133,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Navbar; 
