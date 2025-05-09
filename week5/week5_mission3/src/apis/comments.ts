@@ -8,7 +8,9 @@ export const getComments = async (
   comments: CommentApiResponse["data"]["data"];
   nextPage: number | null;
 }> => {
-  const token = localStorage.getItem("accessToken");
+  const rawToken = localStorage.getItem("accessToken");
+  const token = rawToken?.replace(/^"|"$/g, ""); // 따옴표 제거
+
   if (!token) throw new Error("인증이 필요합니다.");
 
   const response = await axios.get<CommentApiResponse>(

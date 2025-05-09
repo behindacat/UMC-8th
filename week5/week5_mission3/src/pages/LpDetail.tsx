@@ -1,5 +1,9 @@
 import { useParams } from "react-router-dom";
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import axios from "axios";
 import React, { useEffect, useState, useRef } from "react";
 import { getMyInfo } from "../apis/auth";
@@ -18,7 +22,6 @@ const fetchLpDetail = async (lpid: string) => {
   return data.data;
 };
 
-
 // 💡 댓글 스켈레톤 컴포넌트
 const CommentSkeleton = () => (
   <div className="flex items-start gap-4 bg-gray-700 p-3 rounded-lg animate-pulse">
@@ -31,18 +34,21 @@ const CommentSkeleton = () => (
   </div>
 );
 
-
 const LpDetail = () => {
   const { lpid } = useParams<{ lpid: string }>();
   const [user, setUser] = useState<ResponseMyInfoDto | null>(null);
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("oldest");
   const observerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
-  const fetchComments = async ({ pageParam = 1 }) => {
-  const result = await getComments(lpid!, pageParam);
-  return result;
-};
-
+  // 사용자 정보
+  useEffect(() => {
+    const getUserInfo = async () => {
+      const response = await getMyInfo();
+      setUser(response);
+    };
+    getUserInfo();
+  }, []);
 
   // LP 상세
   const {
@@ -63,43 +69,48 @@ const LpDetail = () => {
     hasNextPage,
     isFetchingNextPage,
     refetch,
+    isFetching,
   } = useInfiniteQuery({
     queryKey: ["comments", lpid, sortOrder],
-    queryFn: fetchComments,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+    queryFn: async ({ pageParam = 1 }) => {
+      const result = await getComments(lpid!, pageParam);
+      return result;
+    },
+    getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
     initialPageParam: 1,
     enabled: !!lpid,
   });
 
-  // 댓글 정렬 변경 시 재요청
   useEffect(() => {
-    refetch();
-  }, [sortOrder]);
+    console.log("📦 commentPages 전체", commentPages);
+    if (commentPages) {
+      commentPages.pages.forEach((page, idx) => {
+        console.log(`📄 Page ${idx + 1}:`, page.comments);
+      });
+    }
+  }, [commentPages]);
 
-  // 사용자 정보
+  // 댓글 정렬 변경 시 쿼리 제거 후 새로 fetch
   useEffect(() => {
-    const getUserInfo = async () => {
-      const response = await getMyInfo();
-      setUser(response);
-    };
-    getUserInfo();
-  }, []);
+    queryClient.removeQueries({ queryKey: ["comments", lpid] });
+  }, [sortOrder]);
 
   // 무한 스크롤 감지
   useEffect(() => {
-    const observerEl = observerRef.current;
-    if (!observerEl || !hasNextPage) return;
+    const el = observerRef.current;
+    if (!el || !hasNextPage) return;
 
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting && !isFetchingNextPage) {
         fetchNextPage();
       }
     });
 
-    observer.observe(observerEl);
+    observer.observe(el);
     return () => observer.disconnect();
-  }, [observerRef.current, hasNextPage]);
+  }, [observerRef.current, hasNextPage, isFetchingNextPage]);
 
+  if (!lpid) return <div>잘못된 접근입니다.</div>;
   if (isLoading) return <div>로딩 중...</div>;
   if (isError) return <div>데이터를 불러오지 못했습니다. {error.message}</div>;
 
@@ -148,6 +159,7 @@ const LpDetail = () => {
       {/* 설명 */}
       <div className="mt-20 px-20 text-sm text-gray-300">{lp.content}</div>
 
+      {/* 좋아요 */}
       <div className="mt-8 px-8 flex justify-center items-center space-x-4">
         <button className="bg-white-500 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-yellow-500 transition duration-300">
           👍 1
@@ -156,7 +168,6 @@ const LpDetail = () => {
 
       {/* 댓글 작성란 */}
       <div className="mt-20 px-8">
-
         {/* 정렬 버튼 */}
         <div className="flex justify-between items-center mt-6 mb-2">
           <h2 className="text-xl font-bold">댓글</h2>
@@ -197,34 +208,36 @@ const LpDetail = () => {
 
         {/* 댓글 목록 */}
         <div className="space-y-4 mt-4">
-          {/* 스켈레톤 UI */}
-          {!commentPages &&
-            Array.from({ length: 3 }).map((_, i) => <CommentSkeleton key={i} />)}
-
-          {/* 댓글 목록 */}
-          {commentPages?.pages.flatMap((page) =>
-            page.comments.map((comment: CommentData) => (
-              <div
-                key={comment.id}
-                className="flex items-start gap-4 bg-gray-700 p-3 rounded-lg text-sm text-white"
-              >
-                <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  {comment.author?.name?.[0]}
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="font-semibold">{comment.author?.name}</div>
-                  <div>{comment.content}</div>
-                </div>
-              </div>
-            ))
-          )}
-
+          {!commentPages
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <CommentSkeleton key={i} />
+              ))
+            : commentPages.pages.map((page, i) => (
+                <React.Fragment key={i}>
+                  {page.comments.map((comment: CommentData) => (
+                    <div
+                      key={comment.id}
+                      className="flex items-start gap-4 bg-gray-700 p-3 rounded-lg text-sm text-white"
+                    >
+                      <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-semibold">
+                        {comment.author?.name?.[0]}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-semibold">
+                          {comment.author?.name}
+                        </div>
+                        <div>{comment.content}</div>
+                      </div>
+                    </div>
+                  ))}
+                </React.Fragment>
+              ))}
         </div>
 
-        {/* 스크롤 감지 */}
+        {/* 스크롤 감지용 요소 */}
         <div ref={observerRef} className="h-10" />
 
-        {/* ③ 다음 페이지 로딩 시 스켈레톤 */}
+        {/* 다음 페이지 로딩 스켈레톤 */}
         {isFetchingNextPage && (
           <div className="space-y-4 mt-4">
             {Array.from({ length: 2 }).map((_, i) => (
@@ -232,7 +245,6 @@ const LpDetail = () => {
             ))}
           </div>
         )}
-
       </div>
 
       <div className="h-32" />
