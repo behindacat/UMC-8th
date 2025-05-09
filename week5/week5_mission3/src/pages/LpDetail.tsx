@@ -204,15 +204,13 @@ const LpDetail = () => {
           </button>
         </div>
 
-
-
         {/* 댓글 목록 */}
         <div className="space-y-4 mt-4">
-          {/* ① 댓글 불러오기 전 스켈레톤 */}
+          {/* 스켈레톤 UI */}
           {!commentPages &&
             Array.from({ length: 3 }).map((_, i) => <CommentSkeleton key={i} />)}
 
-          {/* ② 실제 댓글 목록 */}
+          {/* 댓글 목록 */}
           {commentPages?.pages.flatMap((page) =>
             page.comments.map((comment: any) => (
               <div
@@ -228,18 +226,13 @@ const LpDetail = () => {
                 <div className="flex-1 text-left">
                   <div className="font-semibold">{comment.authorName}</div>
                   <div>{comment.content}</div>
-                  <div className="text-gray-400 text-xs mt-1">
-                    {formatDistanceToNow(new Date(comment.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
 
-        {/* 스크롤 감지용 */}
+        {/* 스크롤 감지 */}
         <div ref={observerRef} className="h-10" />
 
         {/* ③ 다음 페이지 로딩 시 스켈레톤 */}
