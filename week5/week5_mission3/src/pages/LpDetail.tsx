@@ -5,6 +5,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { getMyInfo } from "../apis/auth";
 import { ResponseMyInfoDto } from "../types/auth";
 import { formatDistanceToNow } from "date-fns";
+import { getComments } from "../apis/comments";
+import { CommentData } from "../types/comments";
 
 // LP 상세 조회
 const fetchLpDetail = async (lpid: string) => {
@@ -14,24 +16,6 @@ const fetchLpDetail = async (lpid: string) => {
     headers: { Authorization: `Bearer ${token}` },
   });
   return data.data;
-};
-
-// 댓글 조회
-const fetchComments = async ({ pageParam = 1 }) => {
-  // ✨ 스켈레톤 UI가 보일 수 있도록 인위적 딜레이 (예: 800ms)
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  const dummyComments = Array.from({ length: 5 }, (_, i) => ({
-    id: `dummy-${pageParam}-${i}`,
-    authorName: `사용자 ${i + 1}`,
-    content: "댓글 내용 예시입니다. 실제 댓글 내용은 API에서 불러오세요.",
-    createdAt: new Date().toISOString(),
-  }));
-
-  return {
-    comments: dummyComments,
-    nextPage: pageParam + 1,
-  };
 };
 
 
@@ -53,6 +37,12 @@ const LpDetail = () => {
   const [user, setUser] = useState<ResponseMyInfoDto | null>(null);
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("oldest");
   const observerRef = useRef<HTMLDivElement>(null);
+
+  const fetchComments = async ({ pageParam = 1 }) => {
+  const result = await getComments(lpid!, pageParam);
+  return result;
+};
+
 
   // LP 상세
   const {
@@ -77,6 +67,7 @@ const LpDetail = () => {
     queryKey: ["comments", lpid, sortOrder],
     queryFn: fetchComments,
     getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 1,
     enabled: !!lpid,
   });
 
@@ -212,24 +203,22 @@ const LpDetail = () => {
 
           {/* 댓글 목록 */}
           {commentPages?.pages.flatMap((page) =>
-            page.comments.map((comment: any) => (
+            page.comments.map((comment: CommentData) => (
               <div
                 key={comment.id}
                 className="flex items-start gap-4 bg-gray-700 p-3 rounded-lg text-sm text-white"
               >
-                {/* 프로필 이미지 */}
                 <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center text-white font-semibold">
-                  {comment.authorName[0]}
+                  {comment.author?.name?.[0]}
                 </div>
-
-                {/* 댓글 내용 */}
                 <div className="flex-1 text-left">
-                  <div className="font-semibold">{comment.authorName}</div>
+                  <div className="font-semibold">{comment.author?.name}</div>
                   <div>{comment.content}</div>
                 </div>
               </div>
             ))
           )}
+
         </div>
 
         {/* 스크롤 감지 */}
