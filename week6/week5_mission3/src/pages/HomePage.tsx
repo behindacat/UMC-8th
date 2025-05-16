@@ -56,8 +56,6 @@ const HomePage = () => {
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
       />
       <main className="flex-1 p-6 bg-gray-900 min-h-screen text-white">
         {/* 검색 및 정렬 영역 */}

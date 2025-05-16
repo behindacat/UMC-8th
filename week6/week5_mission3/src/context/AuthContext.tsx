@@ -3,6 +3,7 @@ import { RequestSigninDto } from "../types/auth";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { postLogout, postSignin, getMyInfo } from "../apis/auth";
+import { deleteAccount as deleteAccountApi } from "../apis/auth"; // 이름 변경 임포트
 
 interface UserInfo {
   id: number;
@@ -18,6 +19,7 @@ interface AuthContextType {
   userInfo: UserInfo | null;
   login: (signInData: RequestSigninDto) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   updateUserInfo: (info: UserInfo) => void;
 }
 
@@ -27,6 +29,7 @@ export const AuthContext = createContext<AuthContextType>({
   userInfo: null,
   login: async () => {},
   logout: async () => {},
+  deleteAccount: async () => {},
   updateUserInfo: () => {},
 });
 
@@ -36,6 +39,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setItem: setAccessTokenInStorage,
     removeItem: removeAccessTokenFromStorage,
   } = useLocalStorage(LOCAL_STORAGE_KEY.accessToken);
+
   const {
     getItem: getRefreshTokenFromStorage,
     setItem: setRefreshTokenInStorage,
@@ -50,7 +54,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   );
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-  // 초기 사용자 정보 로드
   useEffect(() => {
     const loadUserInfo = async () => {
       if (accessToken) {
@@ -83,7 +86,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         setAccessToken(newAccessToken);
         setRefreshToken(newRefreshToken);
 
-        // 로그인 후 사용자 정보 가져오기
         const userResponse = await getMyInfo();
         if (userResponse?.data) {
           setUserInfo(userResponse.data);
@@ -101,6 +103,9 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   const logout = async () => {
     try {
       await postLogout();
+    } catch (error) {
+      console.log("로그아웃 오류", error);
+    } finally {
       removeAccessTokenFromStorage();
       removeRefreshTokenFromStorage();
 
@@ -110,20 +115,37 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
       alert("로그아웃 성공");
       window.location.href = "/my";
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      await deleteAccountApi();  // API 호출 (재귀 호출 아님)
+      await logout();
+      alert("회원 탈퇴 완료");
     } catch (error) {
-      console.log("로그아웃 오류", error);
-      alert("로그아웃 실패");
+      console.error("회원 탈퇴 실패:", error);
+      alert("회원 탈퇴 실패");
     }
   };
 
   const updateUserInfo = (info: UserInfo) => {
     console.log("사용자 정보 업데이트:", info);
-    // 강제로 상태 업데이트
     setUserInfo(info);
   };
 
   return (
-    <AuthContext.Provider value={{ accessToken, refreshToken, userInfo, login, logout, updateUserInfo }}>
+    <AuthContext.Provider
+      value={{
+        accessToken,
+        refreshToken,
+        userInfo,
+        login,
+        logout,
+        deleteAccount,
+        updateUserInfo,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

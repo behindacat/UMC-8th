@@ -38,7 +38,7 @@ export const updateProfile = async (updateData: {
   avatar?: string;
 }) => {
   try {
-    const { data } = await axiosInstance.patch("/v1/users/me/update", updateData);
+    const { data } = await axiosInstance.patch("/v1/users", updateData);
     return data;
   } catch (error: any) {
     console.error(
@@ -51,6 +51,6 @@ export const updateProfile = async (updateData: {
 
 // 탈퇴하기 API 함수 (서버 API 문서에 따라 경로/메서드 조정 필요)
 export const deleteAccount = async () => {
-  const { data } = await axiosInstance.delete("/v1/users/me");
+  const { data } = await axiosInstance.delete("/v1/users");
   return data;
 };
