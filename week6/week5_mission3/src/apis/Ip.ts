@@ -6,7 +6,7 @@ import {
   ResponseLpListDto,
 } from "../types/Lp";
 import { axiosInstance } from "./axios";
-import customAxios from "./customAxios";
+// import customAxios from "./customAxios";
 
 // LP 목록 조회
 export const getLpList = async (
@@ -48,6 +48,7 @@ export interface PostLpParams {
   content: string;
   tags: string[];
   thumbnail: string; // base64 or image url
+  published: boolean;
 }
 
 export interface PostLpResponse {
@@ -60,10 +61,7 @@ export interface PostLpResponse {
 }
 
 // LP 생성 요청
-export const postLp = async (
-  data: PostLpParams
-): Promise<PostLpResponse> => {
-  const response = await customAxios.post("/lps", data);
+export const postLp = async (data: PostLpParams): Promise<PostLpResponse> => {
+  const response = await axiosInstance.post("/v1/lps", data);
   return response.data;
 };
-

@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { getMyInfo } from "../apis/auth";
 import { ResponseMyInfoDto } from "../types/auth";
@@ -9,13 +8,13 @@ import LpComments from "../components/LpComments";
 import usePostLike from "../hooks/mutations/usePostLike";
 import useDeleteLike from "../hooks/mutations/useDeleteLike";
 import { Heart } from "lucide-react";
-
+import { axiosInstance } from "../apis/axios";
 
 // LP 상세 조회
 const fetchLpDetail = async (lpid: string) => {
   const token = localStorage.getItem("accessToken");
   if (!token) throw new Error("인증이 필요합니다.");
-  const { data } = await axios.get(`/v1/lps/${lpid}`, {
+  const { data } = await axiosInstance.get(`/v1/lps/${lpid}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return data.data;
@@ -66,13 +65,36 @@ const LpDetail = () => {
     addSuffix: true,
   });
 
-  const isLiked = lp.likes?.some((like: any) => like.userId === user?.data?.id);
+  // const isLiked = lp.likes?.some((like: any) => like.userId === user?.data?.id);
+
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    if (lp && user?.data?.id) {
+      const liked = lp.likes?.some((like: any) => like.userId === user.data.id);
+      setIsLiked(liked);
+    }
+  }, [lp, user]);
+
+  // const handleLikeClick = () => {
+  //   if (lp.isLiked) {
+  //     deleteLikeMutation.mutate();
+  //   } else {
+  //     postLikeMutation.mutate();
+  //   }
+  // };
 
   const handleLikeClick = () => {
-    if (lp.isLiked) {
-      deleteLikeMutation.mutate();
+    if (isLiked) {
+      setIsLiked(false); // 낙관적 처리
+      deleteLikeMutation.mutate(undefined, {
+        onError: () => setIsLiked(true), // 실패 시 롤백
+      });
     } else {
-      postLikeMutation.mutate();
+      setIsLiked(true);
+      postLikeMutation.mutate(undefined, {
+        onError: () => setIsLiked(false),
+      });
     }
   };
 
@@ -96,11 +118,26 @@ const LpDetail = () => {
       {/* LP 제목 */}
       <div className="flex justify-between items-center mt-8 px-8">
         <h1 className="text-3xl font-bold text-left">{lp.title}</h1>
-        <div className="flex space-x-4 text-2xl cursor-pointer">
-          <span title="수정">✏️</span>
-          <span title="삭제">🗑️</span>
-        </div>
+        
+        {/* 작성자가 로그인 유저일 때만 수정/삭제 버튼 표시 */}
+        {user?.data?.id === lp.authorId && (
+          <div className="flex space-x-4 text-2xl cursor-pointer">
+            <span title="수정" onClick={() => navigate(`/lp/edit/${lpid}`)}>✏️</span>
+            <span
+              title="삭제"
+              onClick={() => {
+                // 삭제 로직 (예: confirm 후 API 호출)
+                if (window.confirm("정말 삭제하시겠습니까?")) {
+                  // 삭제 API 호출 후 처리 (navigate 등)
+                }
+              }}
+            >
+              🗑️
+            </span>
+          </div>
+        )}
       </div>
+
 
       {/* 썸네일 */}
       <div className="flex justify-center mt-20">
@@ -131,7 +168,7 @@ const LpDetail = () => {
         </button>
       </div>
 
-      {/* ✅ 댓글 분리 컴포넌트 불러오기 */}
+
       <LpComments lpid={lpid} />
 
       <div className="h-32" />

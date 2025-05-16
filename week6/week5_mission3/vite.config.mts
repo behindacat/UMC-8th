@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/v1': {
-        target: 'http://localhost:8000', // 여기를 실제 백엔드 API 주소로!
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
       },
