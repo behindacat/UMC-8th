@@ -1,14 +1,6 @@
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
 import { postLp } from "../../apis/Ip";
-
-// 요청 파라미터 타입
-interface PostLpParams {
-  title: string;
-  content: string;
-  tags: string[];
-  thumbnail: string;
-}
+import { PostLpParams } from "../../apis/Ip";
 
 // 응답 타입
 interface PostLpResponse {
@@ -20,7 +12,11 @@ interface PostLpResponse {
   createdAt: string;
 }
 
-const usePostLp = (): UseMutationResult<PostLpResponse, Error, PostLpParams> => {
+const usePostLp = (): UseMutationResult<
+  PostLpResponse,
+  Error,
+  PostLpParams
+> => {
   return useMutation<PostLpResponse, Error, PostLpParams>({
     mutationFn: postLp,
   });
