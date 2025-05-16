@@ -63,7 +63,7 @@ export interface PostLpResponse {
 export const postLp = async (
   data: PostLpParams
 ): Promise<PostLpResponse> => {
-  const response = await customAxios.post("/lp", data);
+  const response = await customAxios.post("/lps", data);
   return response.data;
 };
 
