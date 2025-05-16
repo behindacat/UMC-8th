@@ -1,0 +1,11 @@
+// src/apis/customAxios.ts
+import axios from "axios";
+
+const customAxios = axios.create({
+  baseURL: "https://localhost:5173/",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export default customAxios;
