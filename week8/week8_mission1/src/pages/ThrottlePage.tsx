@@ -6,7 +6,7 @@ const ThrottlePage = () => {
 
    const handleScroll = useThrottle(() => {
       setScrollY(window.scrollY);
-   }, 2000);
+   }, 3000);
 
    useEffect(() => {
       window.addEventListener("scroll", handleScroll);
