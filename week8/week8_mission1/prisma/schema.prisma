@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String
+  name     String
+
+  comments Comment[]
+  likes    Like[]
+}
+
+model Lp {
+  id        Int       @id @default(autoincrement())
+  title     String
+  authorId  Int
+  author    User      @relation(fields: [authorId], references: [id])
+  comments  Comment[]
+  likes     Like[]
+}
+
+model Comment {
+  id      Int    @id @default(autoincrement())
+  content String
+  userId  Int
+  lpId    Int
+  user    User @relation(fields: [userId], references: [id])
+  lp      Lp   @relation(fields: [lpId], references: [id])
+}
+
+model Like {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  lpId   Int
+  user   User @relation(fields: [userId], references: [id])
+  lp     Lp   @relation(fields: [lpId], references: [id])
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
