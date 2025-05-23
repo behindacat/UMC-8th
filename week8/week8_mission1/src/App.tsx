@@ -14,8 +14,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import LpDetail from './pages/LpDetail';
 import ProtectedRoute from './routes/ProtectedRoute';
-
-
+import ThrottlePage from './pages/ThrottlePage';
 
 const publicRoutes:RouteObject[] = [
   {
@@ -34,7 +33,8 @@ const publicRoutes:RouteObject[] = [
             <LpDetail />
           </ProtectedRoute>
         )
-      }
+      },
+      {path: '/throttle', element: <ThrottlePage />},
     ],
   },
 ];
