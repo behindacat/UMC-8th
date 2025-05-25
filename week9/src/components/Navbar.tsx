@@ -20,7 +20,7 @@ const Navbar = () => {
             }}
             className='text-2xl font-semibold'
          >
-            Ohthani Ahn
+            SkyBlue
          </h1>
          <div className='flex items-center space-x-2'>
             <FaShoppingCart className='text-2xl' />
