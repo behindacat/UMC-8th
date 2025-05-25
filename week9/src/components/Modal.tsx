@@ -1,9 +1,10 @@
+import { useCartActions } from "../hooks/useCartStore";
 import { useDispatch, useSelector } from "../hooks/useCustomRedux";
-import { clearCart } from "../slices/cartSlice";
 import { closeModal } from "../slices/modalSlice";
 
 const Modal = () => {
    const { isOpen } = useSelector((state) => state.modal);
+   const { clearCart } = useCartActions();
    const dispatch = useDispatch();
 
    if (!isOpen) return null;
@@ -21,7 +22,7 @@ const Modal = () => {
                </button>
                <button
                   onClick={() => {
-                     dispatch(clearCart());
+                     clearCart();
                      dispatch(closeModal());
                   }}
                   className="bg-red-500 text-white px-4 py-2 rounded"
